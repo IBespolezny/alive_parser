@@ -71,7 +71,6 @@ class CatalogWalker:
         total = get_total_pages(html)
         logger.info(f"Обнаружено страниц в каталоге: {total}")
 
-        # Помечаем все активные детали semi_off перед обходом
         with self.db.conn.cursor() as cur:
             cur.execute("UPDATE catalog_items SET detail_status='semi_off' WHERE is_active=TRUE;")
         logger.info("Все активные детали помечены как semi_off")

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.log
+*.csv
+responses/
+responses2/
+TestScripts/
+*.README.txt
+.env

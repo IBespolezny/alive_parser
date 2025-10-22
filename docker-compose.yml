@@ -1,0 +1,65 @@
+networks:
+  dev:
+    driver: bridge
+
+services:
+  db:
+    image: postgres:15
+    container_name: ${PG_CONTAINER_NAME:-postgres-db} 
+    networks:
+      - dev
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${PG_PORT}:5432"
+    restart: unless-stopped 
+
+  parser:
+    build:
+      context: ./
+      dockerfile: Dockerfile.parser
+    container_name: ${PARSER_CONTAINER_NAME}
+    restart: always
+    depends_on:
+      - db
+    networks:
+      - dev
+    environment:
+      PG_HOST: ${PG_HOST}
+      PG_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./functional_scripts:/app/functional_scripts
+
+  export_api:
+    build:
+      context: ./
+      dockerfile: Dockerfile.api
+    container_name: ${BACKEND_CONTAINER_NAME}
+    restart: always
+    depends_on:
+      - db
+    networks:
+      - dev
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PG_HOST: ${PG_HOST}
+      PG_PORT: 5432
+      WEBAPP_PORT: ${WEBAPP_PORT}
+    volumes:
+      - ./functional_scripts:/app/functional_scripts
+    working_dir: /app
+    ports:
+      - "${WEBAPP_PORT}:${WEBAPP_PORT}"
+    command: uvicorn functional_scripts.export_to_csv_fixed:app --host 0.0.0.0 --port ${WEBAPP_PORT}
+
+volumes:
+  pgdata:

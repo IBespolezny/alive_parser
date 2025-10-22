@@ -1,0 +1,10 @@
+aiohttp
+asyncio
+beautifulsoup4
+fastapi
+lxml
+psycopg2-binary
+requests
+tqdm
+tenacity
+uvicorn
